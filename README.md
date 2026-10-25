@@ -2,7 +2,7 @@
 
 在地图上规划和记录旅行。告诉 AI 目的地、天数和喜好，Claude 会把每天的地点排进地图、连好路线，你可以继续拖拽调整、打卡，再一键分享给同行的人。
 
-**在线体验：** https://liyucheng1997.github.io/ai-travel-planner/
+**在线体验：** https://liyucheng1997.github.io/391_lab-AI-travel/
 
 纯前端应用，没有服务器：行程、对话和设置都只保存在你自己的浏览器里。
 
