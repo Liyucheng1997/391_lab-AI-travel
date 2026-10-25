@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>途迹 · AI 旅行计划</title>
+    <meta name="description" content="在地图上规划和记录旅行，让 Claude 帮你生成路线、安排每日行程，并一键分享给朋友。" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <script>
+      // 尽早应用主题，避免闪烁
+      try {
+        var s = JSON.parse(localStorage.getItem('tuji.v1.settings') || '{}');
+        var t = s.theme || 'system';
+        if (t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
