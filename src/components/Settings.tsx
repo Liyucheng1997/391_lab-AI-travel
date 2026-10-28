@@ -5,6 +5,7 @@ import { normalizeTrip, settingsStore, tripStore, useSettings } from '../lib/sto
 import { sampleTrip } from '../lib/sample';
 import { download, pickFile } from '../lib/util';
 import type { Effort, Settings, ThemePref } from '../types';
+import { PersonAvatar } from './Avatar';
 import { Icon } from './Icon';
 import { Modal, Seg, confirmDialog, toast } from './ui';
 
@@ -29,7 +30,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
   };
 
   const save = () => {
-    settingsStore.set({ ...f, apiKey: f.apiKey.trim(), baseURL: f.baseURL.trim() });
+    settingsStore.set({ ...f, nickname: f.nickname.trim(), apiKey: f.apiKey.trim(), baseURL: f.baseURL.trim() });
     toast('设置已保存', 'success');
     onClose();
   };
@@ -91,6 +92,15 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
       }
     >
       <div className="settings">
+        <div className="set-section">
+          <div className="set-label">我的头像</div>
+          <div className="profile">
+            <PersonAvatar name={f.nickname.trim() || '我'} size={48} />
+            <input className="input" value={f.nickname} maxLength={20} onChange={(e) => set({ nickname: e.target.value })} placeholder="你的昵称，头像显示第一个字" />
+          </div>
+          <div className="set-note">头像颜色按昵称自动分配。同行的人在每个行程的「行程信息」里添加。</div>
+        </div>
+
         <div className="set-section">
           <div className="set-label">CLAUDE API</div>
           <div className="form">

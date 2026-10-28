@@ -6,6 +6,7 @@ import type { Trip } from '../types';
 import { setPendingPrompt } from './ChatPanel';
 import { Icon } from './Icon';
 import { MapView, type MapDay } from './MapView';
+import { AvatarStack, PersonAvatar, tripPeople } from './Avatar';
 import { ThemeButton } from './Settings';
 import { toast } from './ui';
 
@@ -83,14 +84,16 @@ export function Home() {
         </div>
         <div style={{ flex: 1 }} />
         <ThemeButton />
-        <button className="tb-round" onClick={ui.openSettings} title="设置">
-          <Icon name="settings" size={17} />
+        <button className="me-btn" onClick={ui.openSettings} title={settings.nickname ? `${settings.nickname} · 设置` : '设置昵称和头像'}>
+          <PersonAvatar name={settings.nickname || '我'} size={36} title="" />
         </button>
       </header>
 
       <div className="home-scroll">
         <section className="hero">
-          <div className="hero-greet">{greeting()} 👋</div>
+          <div className="hero-greet">
+            {greeting()}{settings.nickname ? `，${settings.nickname}` : ''} 👋
+          </div>
           <h1 className="hero-title">
             下一段旅程，交给 <span className="hl">AI</span> 来规划
           </h1>
@@ -145,7 +148,7 @@ export function Home() {
               <div className="muted">自己在地图上一点点安排</div>
             </button>
             {trips.map((t) => (
-              <TripCard key={t.id} trip={t} />
+              <TripCard key={t.id} trip={t} nickname={settings.nickname} />
             ))}
           </div>
         </section>
@@ -185,16 +188,20 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function TripCard({ trip }: { trip: Trip }) {
+function TripCard({ trip, nickname }: { trip: Trip; nickname: string }) {
   const s = tripStats(trip);
+  const people = tripPeople(nickname, trip.members);
   return (
     <button className="trip-card" onClick={() => navigate(`/trip/${trip.id}`)}>
       <RoutePreview trip={trip} />
       <div className="tc-body">
         <div className="tc-dest">{trip.destination || '目的地未定'}</div>
         <div className="tc-name">{trip.name}</div>
-        <div className="tc-meta tabular">
-          {fmtDateRange(trip)} · {trip.days.length} 天 · {s.places} 个地点
+        <div className="tc-foot">
+          <div className="tc-meta tabular">
+            {fmtDateRange(trip)} · {trip.days.length} 天 · {s.places} 个地点
+          </div>
+          {people.length > 1 && <AvatarStack names={people} size={22} max={3} />}
         </div>
       </div>
     </button>
@@ -235,7 +242,7 @@ function RoutePreview({ trip }: { trip: Trip }) {
       ))}
       {pts.map((p) => {
         const [x, y] = proj(p.lat, p.lng);
-        return <circle key={p.id} cx={x} cy={y} r="3.5" fill="var(--panel)" stroke="var(--primary)" strokeWidth="2" />;
+        return <circle key={p.id} className={`cat-${p.category}`} cx={x} cy={y} r="4" fill="var(--c)" stroke="var(--panel)" strokeWidth="1.5" />;
       })}
     </svg>
   );

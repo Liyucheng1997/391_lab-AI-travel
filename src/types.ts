@@ -35,6 +35,8 @@ export interface Trip {
   currency: string;
   budget?: number;
   notes?: string;
+  /** 同行的人（昵称），用于显示头像 */
+  members?: string[];
   days: Day[];
   createdAt: number;
   updatedAt: number;
@@ -44,6 +46,8 @@ export type Effort = 'low' | 'medium' | 'high';
 export type ThemePref = 'light' | 'dark' | 'system';
 
 export interface Settings {
+  /** 我的昵称，用于头像和问候 */
+  nickname: string;
   apiKey: string;
   authMode: 'apiKey' | 'bearer';
   baseURL: string;

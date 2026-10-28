@@ -1,3 +1,4 @@
+import type { IconName } from '../components/Icon';
 import type { Category, RouteMode, Trip } from '../types';
 
 export const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -11,6 +12,35 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   activity: '体验',
   other: '其他',
 };
+
+export const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[];
+
+/** 每种类型的头像图标；颜色在 app.css 的 --cat-* 变量里 */
+export const CATEGORY_ICON: Record<Category, IconName> = {
+  sight: 'catSight',
+  food: 'catFood',
+  hotel: 'catHotel',
+  transport: 'catTransport',
+  shopping: 'catShopping',
+  activity: 'catActivity',
+  other: 'catOther',
+};
+
+/** 人物头像：取昵称第一个字，颜色按名字固定分配 */
+export const initialOf = (name: string) => Array.from(name.trim())[0]?.toUpperCase() ?? '?';
+export function avatarTone(name: string): number {
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.codePointAt(0)!) >>> 0;
+  return h % 6;
+}
+
+/** 在外部地图里打开（国内用高德，其他地方用 Google 地图） */
+export function externalMapUrl(p: { lat: number; lng: number; name: string }): string {
+  const inChina = p.lng > 73 && p.lng < 135.5 && p.lat > 18 && p.lat < 53.6;
+  return inChina
+    ? `https://uri.amap.com/marker?position=${p.lng},${p.lat}&name=${encodeURIComponent(p.name)}&coordinate=wgs84&callnative=1`
+    : `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+}
 
 export const ROUTE_LABEL: Record<RouteMode, string> = {
   driving: '驾车',

@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: Settings = {
   apiKey: '',
   authMode: 'apiKey',
   baseURL: '',
+  nickname: '',
   model: 'claude-opus-5-5',
   effort: 'medium',
   webSearch: false,
@@ -83,10 +84,17 @@ export function normalizeTrip(raw: any, freshIds = false): Trip | null {
     currency: str(raw.currency, 8) || 'CNY',
     budget: num(raw.budget),
     notes: str(raw.notes),
+    members: normalizeMembers(raw.members),
     days: days.length ? days : [emptyDay()],
     createdAt: num(raw.createdAt) ?? now,
     updatedAt: num(raw.updatedAt) ?? now,
   };
+}
+
+export function normalizeMembers(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const list = [...new Set(raw.map((m) => str(m, 20)?.trim()).filter(Boolean) as string[])].slice(0, 20);
+  return list.length ? list : undefined;
 }
 
 export const emptyDay = (): Day => ({ id: uid(), routeMode: 'driving', places: [] });

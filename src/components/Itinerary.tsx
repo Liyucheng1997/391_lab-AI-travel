@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { optimizeOrder } from '../lib/geo';
-import { emptyDay, tripStore } from '../lib/store';
+import { emptyDay, tripStore, useSettings } from '../lib/store';
 import { CATEGORY_LABEL, ROUTE_LABEL, fmtDateRange, fmtDayDate, fmtDistance, fmtDuration, fmtMoney, tripStats } from '../lib/util';
 import type { Day, RouteMode, RouteResult, Trip } from '../types';
+import { AvatarStack, PlaceAvatar, tripPeople } from './Avatar';
 import { Icon } from './Icon';
 import { DayModal, PlaceModal, TripInfoModal } from './Modals';
 import { Menu, confirmDialog, toast } from './ui';
@@ -23,7 +24,9 @@ interface Props {
 export function Itinerary(props: Props) {
   const { trip, readOnly, selectedDay, onSelectDay } = props;
   const [editTrip, setEditTrip] = useState(false);
+  const { nickname } = useSettings();
   const stats = tripStats(trip);
+  const people = readOnly ? (trip.members ?? []) : tripPeople(nickname, trip.members);
   const shownDays = selectedDay === 'all' ? trip.days.map((d, i) => [d, i] as const) : [[trip.days[selectedDay], selectedDay] as const];
 
   const addDay = () => {
@@ -69,6 +72,18 @@ export function Itinerary(props: Props) {
             ) : null}
           </div>
         )}
+        {people.length > 0 &&
+          (readOnly ? (
+            <div className="itin-people">
+              <AvatarStack names={people} />
+              <span>{people.length} 人同行</span>
+            </div>
+          ) : (
+            <button className="itin-people" onClick={() => setEditTrip(true)} title="编辑同行的人">
+              <AvatarStack names={people} />
+              <span>{people.length > 1 ? `${people.length} 人同行` : '添加同行的人'}</span>
+            </button>
+          ))}
         {trip.notes && <div className="itin-notes">{trip.notes}</div>}
       </div>
 
@@ -240,7 +255,7 @@ function DayCard({ trip, routes, readOnly, day, index, selectedPlaceId, onSelect
               onClick={() => onSelectPlace(p.id)}
               onDoubleClick={() => !readOnly && setEditPlace(p.id)}
             >
-              <span className={'num' + (p.visited ? ' visited' : '')}>{p.visited ? <Icon name="check" size={13} stroke={2.6} /> : i + 1}</span>
+              <PlaceAvatar category={p.category} size={32} badge={i + 1} visited={p.visited} />
               <div className="place-main">
                 <div className="place-name">{p.name}</div>
                 <div className="place-meta tabular">

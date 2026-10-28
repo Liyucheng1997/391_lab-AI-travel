@@ -29,6 +29,7 @@ export async function encodeTrip(trip: Trip): Promise<string> {
     currency: trip.currency,
     budget: trip.budget,
     notes: trip.notes,
+    members: trip.members,
     days: trip.days.map((d) => ({
       title: d.title,
       notes: d.notes,

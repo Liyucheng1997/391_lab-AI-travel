@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { Category, Place, RouteMode, Settings, Trip } from '../types';
 import { geocodeForAgent } from './agentGeo';
 import { optimizeOrder } from './geo';
-import { emptyDay, settingsStore, tripStore } from './store';
+import { emptyDay, normalizeMembers, settingsStore, tripStore } from './store';
 import { CATEGORY_LABEL, fmtDayDate, uid } from './util';
 
 export type MsgParam = Anthropic.Beta.BetaMessageParam;
@@ -94,6 +94,7 @@ const TOOLS: ToolDef[] = [
       currency: { type: 'string', description: 'ISO 币种代码，如 CNY、JPY、EUR' },
       budget: { type: 'number', description: '总预算，行程币种' },
       notes: { type: 'string', description: '整趟旅行的备注' },
+      members: { type: 'array', items: { type: 'string' }, description: '同行的人的昵称（不含用户本人），会整体替换原列表' },
     },
   ),
   tool(
@@ -178,6 +179,7 @@ export function tripSnapshot(trip: Trip): string {
     `今天是 ${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`,
   ];
   if (trip.notes) lines.push(`行程备注：${trip.notes}`);
+  if (trip.members?.length) lines.push(`同行的人：${trip.members.join('、')}`);
   trip.days.forEach((d, i) => {
     lines.push(`第${i + 1}天 ${fmtDayDate(trip, i)}${d.title ? ` 「${d.title}」` : ''} 路线:${d.routeMode}${d.notes ? ` 备注:${d.notes}` : ''}`);
     if (!d.places.length) lines.push('  （空）');
@@ -247,6 +249,7 @@ async function runTool(tripId: string, name: string, input: Record<string, unkno
         if (c) t.currency = c.toUpperCase().slice(0, 8);
         if (isNum(input.budget)) t.budget = input.budget;
         if (typeof input.notes === 'string') t.notes = input.notes || undefined;
+        if (Array.isArray(input.members)) t.members = normalizeMembers(input.members);
       });
       return '已更新行程信息';
     }

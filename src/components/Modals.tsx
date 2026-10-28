@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { emptyDay, tripStore } from '../lib/store';
+import { emptyDay, normalizeMembers, tripStore } from '../lib/store';
 import { CATEGORY_LABEL, fmtDayDate } from '../lib/util';
 import type { Category, Place, Trip } from '../types';
+import { PersonAvatar } from './Avatar';
+import { Icon } from './Icon';
 import { Modal } from './ui';
 
 const CATS = Object.keys(CATEGORY_LABEL) as Category[];
@@ -75,7 +77,8 @@ export function PlaceModal({ trip, placeId, onClose }: { trip: Trip; placeId: st
           <label className="form-label">类型</label>
           <div className="chip-row">
             {CATS.map((c) => (
-              <button key={c} type="button" className={'chip' + (f.category === c ? ' active' : '')} onClick={() => set({ category: c })}>
+              <button key={c} type="button" className={`chip chip-cat cat-${c}` + (f.category === c ? ' active' : '')} onClick={() => set({ category: c })}>
+                <span className="cat-dot" />
                 {CATEGORY_LABEL[c]}
               </button>
             ))}
@@ -134,7 +137,14 @@ export function TripInfoModal({ trip, onClose }: { trip: Trip; onClose: () => vo
     currency: trip.currency,
     budget: trip.budget?.toString() ?? '',
     notes: trip.notes ?? '',
+    members: trip.members ?? [],
   });
+  const [who, setWho] = useState('');
+  const addWho = () => {
+    const names = who.split(/[,，、\s]+/).map((x) => x.trim()).filter(Boolean);
+    if (names.length) set({ members: normalizeMembers([...f.members, ...names]) ?? [] });
+    setWho('');
+  };
   const set = (patch: Partial<typeof f>) => setF((x) => ({ ...x, ...patch }));
   const dayCount = Math.min(60, Math.max(1, Math.round(Number(f.days)) || 1));
   const losing = trip.days.slice(dayCount).reduce((s, d) => s + d.places.length, 0);
@@ -147,6 +157,7 @@ export function TripInfoModal({ trip, onClose }: { trip: Trip; onClose: () => vo
       t.currency = f.currency;
       t.budget = numOrUndef(f.budget);
       t.notes = f.notes.trim() || undefined;
+      t.members = normalizeMembers([...f.members, ...who.split(/[,，、\s]+/)]);
       while (t.days.length < dayCount) t.days.push(emptyDay());
       t.days.length = dayCount;
     });
@@ -184,6 +195,35 @@ export function TripInfoModal({ trip, onClose }: { trip: Trip; onClose: () => vo
         <div className="form-row">
           <label className="form-label">天数</label>
           <input className="input tabular" type="number" min={1} max={60} value={f.days} onChange={(e) => set({ days: e.target.value })} />
+        </div>
+        <div className="form-row" style={{ alignItems: 'flex-start' }}>
+          <label className="form-label" style={{ paddingTop: 7 }}>
+            同行的人
+          </label>
+          <div className="members">
+            {f.members.map((m) => (
+              <span key={m} className="member">
+                <PersonAvatar name={m} size={22} />
+                {m}
+                <button type="button" className="icon-btn sm" onClick={() => set({ members: f.members.filter((x) => x !== m) })} aria-label={`移除${m}`}>
+                  <Icon name="x" size={12} />
+                </button>
+              </span>
+            ))}
+            <input
+              className="input input-sm member-input"
+              value={who}
+              onChange={(e) => setWho(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  addWho();
+                }
+              }}
+              onBlur={addWho}
+              placeholder="输入昵称，回车添加"
+            />
+          </div>
         </div>
         {losing > 0 && <div className="form-warn">减少天数会删除最后几天中的 {losing} 个地点</div>}
         <div className="form-row">
